@@ -1,0 +1,34 @@
+-- Step 1: Configure Azure AI Foundry connection
+-- For AI Foundry projects, use the inference endpoint format
+-- Endpoint format: https://your-project.region.services.ai.azure.com/
+-- Note: Remove the /api/projects/project-name part for the base endpoint
+
+SELECT azure_ai.set_setting('azure_openai.endpoint', 'https://your-azure-openai-endpoint.openai.azure.com/');
+SELECT azure_ai.set_setting('azure_openai.subscription_key', 'your-azure-openai-api-key');
+
+SELECT azure_ai.get_setting('azure_openai.endpoint');
+-- Step 2: Test the embedding function (replace with your deployment name)
+-- This is just a test - replace 'your-ada-deployment-name' with your actual deployment
+SELECT azure_openai.create_embeddings(
+    'text-embedding-ada-002',  -- Your text-embedding-ada-002 deployment name
+    'This is a test embedding'   -- Test text
+);
+
+-- Step 3: Populate embeddings for all reviews (run after configuration)
+-- This will update all reviews with embeddings
+UPDATE movie_reviews 
+SET review_embedding = azure_openai.create_embeddings(
+    'text-embedding-ada-002',  -- Replace with your deployment name
+    (SELECT text_to_embed 
+     FROM movie_review_text_for_embedding e 
+     WHERE e.review_id = movie_reviews.review_id)
+)
+WHERE review_embedding IS NULL;
+
+-- Step 4: Check progress (optional monitoring query)
+SELECT 
+    COUNT(*) as total_reviews,
+    COUNT(review_embedding) as embedded_reviews,
+    COUNT(*) - COUNT(review_embedding) as remaining_reviews,
+    ROUND(COUNT(review_embedding)::numeric / COUNT(*) * 100, 2) as completion_percent
+FROM movie_reviews;

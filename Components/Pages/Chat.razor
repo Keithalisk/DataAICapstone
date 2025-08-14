@@ -1,0 +1,133 @@
+@page "/"
+@page "/chat"
+@rendermode InteractiveServer
+
+<PageTitle>AI Chat Assistant</PageTitle>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h1 class="chat-title">
+            <i class="fas fa-robot"></i>
+            AI Assistant
+        </h1>
+        <p class="chat-subtitle">Powered by Semantic Kernel with Multiple Agents</p>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        @if (currentSession?.Messages != null)
+        {
+            @foreach (var message in currentSession.Messages)
+            {
+                <div class="message @(message.Role.ToString().ToLower())">
+                    <div class="message-header">
+                        <span class="message-role">
+                            @if (message.Role == MessageRole.User)
+                            {
+                                <i class="fas fa-user"></i>
+                                @(" You")
+                            }
+                            else if (message.Role == MessageRole.Assistant)
+                            {
+                                <i class="fas fa-robot"></i>
+                                @(" " + (message.AgentName ?? "Assistant"))
+                            }
+                            else
+                            {
+                                <i class="fas fa-info-circle"></i>
+                                @(" System")
+                            }
+                        </span>
+                        <span class="message-time">@message.Timestamp.ToString("HH:mm")</span>
+                    </div>
+                    <div class="message-content">
+                        @((MarkupString)FormatMessageContent(message.Content))
+                    </div>
+                    @if (message.Metadata != null && message.Metadata.Any())
+                    {
+                        <div class="message-metadata">
+                            <small>
+                                @if (message.Metadata.ContainsKey("source"))
+                                {
+                                    <span class="metadata-item">
+                                        <i class="fas fa-tag"></i> @message.Metadata["source"]
+                                    </span>
+                                }
+                                @if (message.Metadata.ContainsKey("generatedSQL"))
+                                {
+                                    <span class="metadata-item">
+                                        <i class="fas fa-database"></i> SQL Generated
+                                    </span>
+                                }
+                            </small>
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        @if (isProcessing)
+        {
+            <div class="message assistant processing">
+                <div class="message-header">
+                    <span class="message-role">
+                        <i class="fas fa-robot"></i> Assistant
+                    </span>
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    Processing your request...
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="chat-input">
+        <div class="input-group">
+            <input @bind="currentMessage" 
+                   @onkeypress="HandleKeyPress"
+                   @ref="messageInput"
+                   placeholder="Ask me anything... I can help with Microsoft Learn resources, database queries, and more!"
+                   disabled="@isProcessing"
+                   class="form-control" />
+            <button @onclick="SendMessage" 
+                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(currentMessage))"
+                    class="btn btn-primary">
+                @if (isProcessing)
+                {
+                    <i class="fas fa-spinner fa-spin"></i>
+                }
+                else
+                {
+                    <i class="fas fa-paper-plane"></i>
+                }
+                Send
+            </button>
+        </div>
+    </div>
+
+    <div class="agent-status">
+        <div class="agent-indicators">
+            <div class="agent-indicator mslearn">
+                <i class="fas fa-graduation-cap"></i>
+                <span>MSLearn Agent</span>
+            </div>
+            <div class="agent-indicator sql">
+                <i class="fas fa-database"></i>
+                <span>SQL Agent</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.scrollToBottom = (elementId) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.scrollTop = element.scrollHeight;
+        }
+    };
+</script>
