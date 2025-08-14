@@ -58,15 +58,6 @@ builder.Services.AddSingleton<Kernel>(serviceProvider =>
         }
     }
     
-    // Add plugins to kernel
-    kernelBuilder.Plugins.AddFromType<MathPlugin>();
-    kernelBuilder.Plugins.AddFromType<TextPlugin>();
-    kernelBuilder.Plugins.AddFromType<TimePlugin>();
-    
-    // Add FilePlugin with configuration
-    var filePlugin = new FilePlugin(configuration);
-    kernelBuilder.Plugins.AddFromObject(filePlugin, "FilePlugin");
-    
     // Add PostgreSQL Semantic Search Plugin with configuration and logger
     var logger = serviceProvider.GetRequiredService<ILogger<PostgreSQLSemanticSearchPlugin>>();
     var pgSearchPlugin = new PostgreSQLSemanticSearchPlugin(configuration, logger);

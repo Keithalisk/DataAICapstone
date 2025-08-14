@@ -4,55 +4,33 @@ This directory contains Semantic Kernel plugins that provide external tools and 
 
 ## Available Plugins
 
-### MathPlugin
-Provides mathematical calculation functions:
-- `Add` - Add two numbers
-- `Subtract` - Subtract numbers  
-- `Multiply` - Multiply numbers
-- `Divide` - Divide numbers
-- `SquareRoot` - Calculate square root
-- `Power` - Calculate power/exponent
-- `Absolute` - Get absolute value
+### PostgreSQLSemanticSearchPlugin
+The core plugin for this application, providing PostgreSQL-based semantic search capabilities:
+- `SearchMovieReviewsAsync` - Search for movie reviews using semantic similarity
+- `SearchMovieReviewsWithFiltersAsync` - Search with additional filters (year, genre, rating)
+- `GetRecentHighRatedReviewsAsync` - Get recent highly-rated movie reviews
+- `CompareSemanticVsKeywordSearchAsync` - Compare semantic vs traditional keyword search
 
-### TextPlugin
-Provides text processing functions:
-- `ToUpperCase` - Convert to uppercase
-- `ToLowerCase` - Convert to lowercase
-- `ToTitleCase` - Convert to title case
-- `CountCharacters` - Count characters
-- `CountWords` - Count words
-- `ReverseText` - Reverse text
-- `ReplaceText` - Replace text
-- `ExtractSubstring` - Extract substring
-- `SplitText` - Split text by delimiter
-- `JoinText` - Join text with delimiter
-- `TrimText` - Trim whitespace
-- `ContainsText` - Check if text contains substring
+This plugin leverages:
+- **Azure OpenAI embeddings** for semantic understanding
+- **PostgreSQL pgvector extension** for efficient vector similarity search
+- **Real-time embedding generation** through PostgreSQL's azure_ai extension
 
-### TimePlugin
-Provides date and time functions:
-- `GetCurrentDateTime` - Get current date/time
-- `GetCurrentDate` - Get current date
-- `GetCurrentTime` - Get current time
-- `GetCurrentUtcDateTime` - Get UTC date/time
-- `AddDaysToDate` - Add days to a date
-- `GetDaysBetweenDates` - Calculate days between dates
-- `GetDayOfWeek` - Get day of week
-- `FormatDateTime` - Format date/time
+## How It Works
 
-### FilePlugin
-Provides safe file system operations:
-- `ReadFileAsync` - Read file contents
-- `WriteFileAsync` - Write to file
-- `AppendToFileAsync` - Append to file
-- `ListFiles` - List files in directory
-- `FileExists` - Check if file exists
-- `DeleteFile` - Delete a file
-- `GetFileInfo` - Get file information
+1. **Natural Language Queries**: Users can search using natural language like "action movies with great special effects"
+2. **Embedding Generation**: PostgreSQL calls Azure OpenAI to create embeddings from the query text
+3. **Vector Similarity**: The query embedding is compared against pre-stored review embeddings using cosine similarity
+4. **Ranked Results**: Results are returned ranked by semantic similarity score
 
-## How to Use
+## Configuration
 
-These plugins are automatically registered with the Semantic Kernel in `Program.cs`. Your agents can use these functions by calling them through the kernel.
+The PostgreSQL plugin requires:
+- Azure OpenAI configuration (endpoint, API key, embedding model)
+- PostgreSQL connection with vector and azure_ai extensions enabled
+- Pre-populated movie review embeddings in the database
+
+See `sql/createEmbeddings.sql.template` for database setup instructions.
 
 ## Adding New Plugins
 
@@ -61,7 +39,7 @@ To add a new plugin:
 1. Create a new class in this directory
 2. Add methods decorated with `[KernelFunction]` attribute
 3. Use `[Description]` attributes to describe functions and parameters
-4. Register the plugin in `Program.cs` using `kernelBuilder.Plugins.AddFromType<YourPlugin>()`
+4. Register the plugin in `Program.cs` using `kernelBuilder.Plugins.AddFromObject()` or `AddFromType()`
 
 Example:
 ```csharp
@@ -78,6 +56,6 @@ public class MyPlugin
 
 ## Security Notes
 
-- FilePlugin operations are restricted to a safe working directory
-- All file paths are validated to prevent directory traversal attacks
-- Consider adding appropriate validation and error handling for your custom plugins
+- Database connections use secure connection strings stored in appsettings
+- Sensitive configuration files are excluded from version control via .gitignore
+- API keys and database credentials should never be committed to the repository
