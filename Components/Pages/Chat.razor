@@ -7,10 +7,10 @@
 <div class="chat-container">
     <div class="chat-header">
         <h1 class="chat-title">
-            <i class="fas fa-robot"></i>
-            AI Assistant
+            <i class="fas fa-film"></i>
+            Movie Review Assistant
         </h1>
-        <p class="chat-subtitle">Powered by Semantic Kernel with Multiple Agents</p>
+        <p class="chat-subtitle">Powered by Semantic Kernel with PostgreSQL Vector Search</p>
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -90,7 +90,7 @@
             <input @bind="currentMessage" 
                    @onkeypress="HandleKeyPress"
                    @ref="messageInput"
-                   placeholder="Ask me anything... I can help with Microsoft Learn resources, database queries, and more!"
+                   placeholder="Ask me about movies, search reviews, or add your own review! Try: 'What movies can I review?' or 'Find action movies with great effects'"
                    disabled="@isProcessing"
                    class="form-control" />
             <button @onclick="SendMessage" 
@@ -109,15 +109,19 @@
         </div>
     </div>
 
-    <div class="agent-status">
-        <div class="agent-indicators">
-            <div class="agent-indicator mslearn">
-                <i class="fas fa-graduation-cap"></i>
-                <span>MSLearn Agent</span>
+    <div class="movie-features">
+        <div class="feature-indicators">
+            <div class="feature-indicator search">
+                <i class="fas fa-search"></i>
+                <span>Semantic Search</span>
             </div>
-            <div class="agent-indicator sql">
+            <div class="feature-indicator database">
                 <i class="fas fa-database"></i>
-                <span>SQL Agent</span>
+                <span>Vector Embeddings</span>
+            </div>
+            <div class="feature-indicator review">
+                <i class="fas fa-star"></i>
+                <span>Add Reviews</span>
             </div>
         </div>
     </div>

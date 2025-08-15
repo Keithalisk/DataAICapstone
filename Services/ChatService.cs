@@ -55,12 +55,12 @@ namespace DataAICapstone.Services
                     // Fallback response when no OpenAI service is configured
                     var fallbackMessage = new ChatMessage
                     {
-                        Content = "I'm currently running without an AI language model. To enable full functionality, please configure your OpenAI API key in appsettings.json or appsettings.Development.json.\n\n" +
-                                 "However, I can still help you with plugin functions like:\n" +
-                                 "• Math calculations (try asking me to calculate something)\n" +
-                                 "• Text processing (case conversion, word counting)\n" +
-                                 "• Date/time operations\n" +
-                                 "• File operations\n\n" +
+                        Content = "I'm currently running without an AI language model. To enable full functionality, please configure your Azure OpenAI API key in appsettings.json.\n\n" +
+                                 "However, I can still help you with movie review functions like:\n" +
+                                 "• Browse available movies for review\n" +
+                                 "• Search movie reviews using semantic similarity\n" +
+                                 "• Add new movie reviews with automatic embedding\n" +
+                                 "• Filter movies by genre, year, or rating\n\n" +
                                  "Note: Without the language model, I can only execute direct function calls, not natural language understanding.",
                         Role = MessageRole.Assistant,
                         AgentName = "System (No AI Model)"
@@ -79,10 +79,20 @@ namespace DataAICapstone.Services
                 
                 // Add system message with plugin capabilities
                 chatHistory.AddSystemMessage(
-                    "You are a helpful AI assistant with access to various plugins and tools. " +
-                    "You can help with mathematical calculations, text processing, date/time operations, " +
-                    "and file operations. When users ask for something that might require these capabilities, " +
-                    "feel free to use the available functions to provide accurate results."
+                    "You are a specialized Movie Review Assistant powered by advanced semantic search capabilities. " +
+                    "You have access to a PostgreSQL database with vector embeddings that allows you to:\n\n" +
+                    "1. **Search movie reviews semantically** - Find reviews based on natural language queries using vector similarity\n" +
+                    "2. **Browse available movies** - Show users what movies are available for review with filtering options\n" +
+                    "3. **Add new movie reviews** - Help users submit reviews that are automatically embedded for future search\n" +
+                    "4. **Filter and compare** - Advanced filtering by genre, year, rating, and comparison of search methods\n\n" +
+                    "Key capabilities:\n" +
+                    "- Semantic search using Azure OpenAI embeddings for natural language understanding\n" +
+                    "- Vector similarity matching for finding related content\n" +
+                    "- Real-time embedding generation for new reviews\n" +
+                    "- Comprehensive movie database with metadata\n\n" +
+                    "Always encourage users to explore movie discovery, add their own reviews, and leverage the semantic search " +
+                    "to find exactly what they're looking for. When users ask about movies, reviews, or want to add content, " +
+                    "use the available PostgreSQL semantic search functions to provide accurate, relevant results."
                 );
 
                 // Add recent conversation history (last 10 messages to keep context manageable)
@@ -95,6 +105,10 @@ namespace DataAICapstone.Services
                 }
 
                 // Configure execution settings to enable function calling
+                // AutoInvokeKernelFunctions allows the LLM to intelligently decide whether to:
+                // 1. Call available plugin functions when they're needed for the user's request
+                // 2. Respond directly using its own trained knowledge when appropriate
+                // This gives the AI flexibility to handle both movie database queries AND general conversation
                 var executionSettings = new OpenAIPromptExecutionSettings
                 {
                     ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
@@ -170,15 +184,23 @@ namespace DataAICapstone.Services
             // Add welcome message
             var welcomeMessage = new ChatMessage
             {
-                Content = "Hello! I'm your AI assistant with access to various plugins and capabilities. I can help you with:\n\n" +
-                         "• **Mathematical calculations** - Basic arithmetic, square roots, powers, etc.\n" +
-                         "• **Text processing** - Case conversion, word counting, text manipulation\n" +
-                         "• **Date and time operations** - Current time, date calculations, formatting\n" +
-                         "• **File operations** - Reading, writing, and managing text files\n" +
-                         "• **General questions** - I can help with various other tasks as well\n\n" +
-                         "What can I help you with today?",
+                Content = "🎬 Welcome to your **Movie Review Assistant**! \n\n" +
+                         "I'm powered by advanced semantic search using PostgreSQL vector embeddings and Azure OpenAI. Here's what I can help you with:\n\n" +
+                         "🔍 **Discover Movies & Reviews**\n" +
+                         "• *\"What movies can I review?\"* - Browse available movies with filters\n" +
+                         "• *\"Find action movies from 2020 or later\"* - Smart filtering by genre, year, rating\n" +
+                         "• *\"Search for reviews about great special effects\"* - Semantic search through reviews\n\n" +
+                         "⭐ **Add Your Reviews**\n" +
+                         "• *\"I want to review [IMDB_ID] with title 'Amazing Film' and text '...'\"* - Add reviews with auto-embedding\n" +
+                         "• Your reviews become instantly searchable by others!\n\n" +
+                         "🎯 **Smart Search Features**\n" +
+                         "• *\"Find romantic comedies with good acting\"* - Natural language understanding\n" +
+                         "• *\"Show me highly rated thriller movies\"* - Vector similarity matching\n" +
+                         "• *\"Compare semantic vs keyword search\"* - Advanced search analysis\n\n" +
+                         "**Try asking**: *\"What sci-fi movies can I review?\"* or *\"Find reviews mentioning plot twists\"*\n\n" +
+                         "What movie adventure would you like to start with? 🍿",
                 Role = MessageRole.System,
-                AgentName = "System"
+                AgentName = "Movie Review Assistant"
             };
             
             session.Messages.Add(welcomeMessage);
